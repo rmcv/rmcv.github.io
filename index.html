@@ -29,6 +29,24 @@ h4 {
   font-family: "Helvetica";
 }
 
+  .sliders {
+    position: absolute;
+    left: 710px;
+    width: 220px;
+    top: 50px;
+    bottom: 0;
+  }
+
+  .sliders label {
+    display: block;
+    font-weight: bold;
+  }
+
+  .sliders input {
+    display: block;
+    width: 100%;
+    margin: 5px 0;
+  }
 </style>
 <body>
 <script src="//d3js.org/d3.v3.min.js"></script>
@@ -49,11 +67,8 @@ HK LegCo Council Meeting 2018-2020
   Use the slider to find voting bloc
   <a href=http://www.legco.gov.hk/general/english/counmtg/yr12-16/mtg_1516.htm#toptbl>(data source)</a></p>
 
-<form align=center>
-  <h5><input type="range" id="thersholdSlider" name="points" value = 0 min="0" max="400" onchange="threshold(this.value)"></h5>
-</form>
-<h4>
-</h4>
+<div class="sliders"></div>
+
 
 <script>
 
@@ -68,7 +83,7 @@ HK LegCo Council Meeting 2018-2020
                .gravity(0.05)
                .distance(100)
                .charge(-100)
-               .size([width, height]);
+               .size([width, height]);             
 
  var link,
      graph,
@@ -173,6 +188,50 @@ HK LegCo Council Meeting 2018-2020
                .attr("height", 30)
                .attr("width", 30);
          });
+
+
+               
+    function makeSlider(name, attr, min, max, defaultValue) {
+      d3.select(".sliders")
+        .append("label")
+        .text(name);
+      var slider = d3.select(".sliders").append("input");
+      slider
+        .attr("type", "range")
+        .attr("min", 0)
+        .attr("max", 1000)
+        .attr("value", ((defaultValue - min) / (max - min)) * 1000);
+      slider.on("input", () => {
+        var val = +slider.property("value");
+        var d = (val / 1000) * (max - min) + min;
+        if (attr == "gravity") {
+          force.gravity(d);
+        }
+        if (attr == "linkDistance") {
+          force.distance(d);
+        }
+        if (attr == "linkStrength") {
+          force.force("link").strength(d);
+        }
+        if (attr == "charge") {
+          force.charge(d);
+        }
+        if (attr == "threshold") {
+          threshold(d);
+        }
+        force.alphaTarget(0.3).restart();
+      });
+    }
+
+    // makeSlider("Friction", "friction", 0.01, 1, 0.5);
+    //makeSlider("Gravity", "gravity", 0.01, 0.1, 0.05);
+    //makeSlider("Charge", "charge", -300, 0, -100);
+    //makeSlider("Link Distance", "linkDistance", 0, 300, 100);
+    //makeSlider("Link Strength", "linkStrength", 0, 0.2, 0.05);
+
+    makeSlider("Bloc Threshold", "threshold", 0, 400, 260);
+    threshold(260);
+
 
      force.on("tick", function() {
          link.attr("x1", function(d) {
